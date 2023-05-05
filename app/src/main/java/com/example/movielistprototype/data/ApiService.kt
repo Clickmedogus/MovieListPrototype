@@ -1,7 +1,6 @@
-package com.example.movielistprototype.data.model
+package com.example.movielistprototype.data
 
 import com.example.movielistprototype.PeopleRespository
-import com.example.movielistprototype.data.model.request.ApiInterface
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

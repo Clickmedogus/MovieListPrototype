@@ -16,11 +16,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.movielistprototype.data.model.response.PeopleResponse
-
+import com.example.movielistprototype.data.model.People
 
 @Composable
-fun UserListItem(peopleResponse: PeopleResponse) {
+fun UserListItem(people: People) {
 
     Card(
         modifier = Modifier
@@ -37,7 +36,7 @@ fun UserListItem(peopleResponse: PeopleResponse) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = peopleResponse.height.toString(),
+                text = people.name.toString(),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.SansSerif
@@ -46,7 +45,7 @@ fun UserListItem(peopleResponse: PeopleResponse) {
             Spacer(modifier = Modifier.padding(10.dp))
 
             Text(
-                text = "Gender: ${peopleResponse.gender}",
+                text = "Gender: ${people.gender}",
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal,
@@ -56,7 +55,7 @@ fun UserListItem(peopleResponse: PeopleResponse) {
             Spacer(modifier = Modifier.padding(5.dp))
 
             Text(
-                text = "Name: ${peopleResponse.name}",
+                text = "Name: ${people.eyeColor}",
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal,

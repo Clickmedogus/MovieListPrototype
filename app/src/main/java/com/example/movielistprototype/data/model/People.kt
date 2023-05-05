@@ -1,8 +1,8 @@
-package com.example.movielistprototype.data.model.response
+package com.example.movielistprototype.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class PeopleResponse(
+data class People(
     @SerializedName("name")
     val name: String = " ",
 
