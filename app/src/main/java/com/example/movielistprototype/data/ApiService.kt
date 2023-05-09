@@ -1,6 +1,7 @@
 package com.example.movielistprototype.data
 
-import com.example.movielistprototype.PeopleRespository
+import com.example.movielistprototype.data.request.ApiInterface
+import com.example.movielistprototype.repository.PeopleRespository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,7 +26,7 @@ object ApiService {
     @Singleton
     @Provides
     fun providesPeopleApi(): ApiInterface {
-        var okHttpClient: OkHttpClient? = null
+        val okHttpClient: OkHttpClient?
         val httpLoggingInterceptor = HttpLoggingInterceptor()
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 

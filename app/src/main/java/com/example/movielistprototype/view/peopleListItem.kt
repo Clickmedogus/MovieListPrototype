@@ -1,6 +1,7 @@
 package com.example.movielistprototype.view
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,25 +22,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movielistprototype.R
 import com.example.movielistprototype.data.model.People
+import com.example.movielistprototype.ui.theme.Gray10
 
-@Preview
 @Composable
-fun PeopleListItem(@PreviewParameter(PeoplePreviewParameterProvider :: class) people: People) {
+fun PeopleListItem(people: People, onClick: (People) -> Unit) {
 
     Card(
         modifier = Modifier
             .padding(5.dp)
             .fillMaxWidth()
+            .clickable{onClick(people)}
             .clip(RoundedCornerShape(10.dp)),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
-        )    ) {
+        ),
+        colors = CardDefaults.cardColors(Gray10)
+    ) {
         Column(
             modifier = Modifier
                 .padding(10.dp)
@@ -47,7 +49,7 @@ fun PeopleListItem(@PreviewParameter(PeoplePreviewParameterProvider :: class) pe
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Row {
+            Row{
 
                 Image(
                     painter = painterResource(id = R.drawable.human),
@@ -80,16 +82,6 @@ fun PeopleListItem(@PreviewParameter(PeoplePreviewParameterProvider :: class) pe
                         fontWeight = FontWeight.Normal,
                         fontFamily = FontFamily.SansSerif
                     )
-
-                    Spacer(modifier = Modifier.padding(5.dp))
-
-                    Text(
-                        text = "Hair Color: ${people.hairColor}",
-                        modifier = Modifier.fillMaxWidth(),
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Normal,
-                        fontFamily = FontFamily.SansSerif
-                    )
                 }
             }
         }
@@ -97,8 +89,15 @@ fun PeopleListItem(@PreviewParameter(PeoplePreviewParameterProvider :: class) pe
 
 }
 
-class PeoplePreviewParameterProvider : PreviewParameterProvider<People> {
-    override val values = sequenceOf(
-        People("DOĞUŞ İZGİ","180","100","male","black")
+@Preview
+@Composable
+fun PeopleListItemPreview() {
+    val people = People(
+        name = "DOĞUŞ İZGİ",
+        height = "180 cm",
+        mass = "100 kg",
+        gender = "male",
+        hairColor = "black"
     )
+    PeopleListItem(people = people) {}
 }

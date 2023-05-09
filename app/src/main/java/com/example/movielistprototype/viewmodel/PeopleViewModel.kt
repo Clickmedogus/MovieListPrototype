@@ -1,17 +1,19 @@
-package com.example.movielistprototype
+package com.example.movielistprototype.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.movielistprototype.data.model.People
+import com.example.movielistprototype.repository.PeopleRespository
 import com.example.movielistprototype.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class PeopleViewModel @Inject constructor(
-    private val peopleRespository: PeopleRespository): ViewModel() {
+    private val peopleRespository: PeopleRespository
+): ViewModel() {
 
     var isLoading = mutableStateOf(false)
     private var _getUserData: MutableLiveData<List<People>> = MutableLiveData<List<People>>()

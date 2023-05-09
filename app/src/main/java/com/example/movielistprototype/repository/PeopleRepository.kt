@@ -1,6 +1,6 @@
-package com.example.movielistprototype
+package com.example.movielistprototype.repository
 
-import com.example.movielistprototype.data.ApiInterface
+import com.example.movielistprototype.data.request.ApiInterface
 import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.utils.Resource
 import com.example.movielistprototype.utils.Resource.Success

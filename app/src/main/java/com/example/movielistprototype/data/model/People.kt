@@ -1,7 +1,11 @@
 package com.example.movielistprototype.data.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+
+@Parcelize
 data class People(
     @SerializedName("name")
     val name: String = " ",
@@ -23,4 +27,11 @@ data class People(
 
     @SerializedName("eye_color")
     val eyeColor: String = " "
-)
+) : Parcelable
+{
+
+    companion object {
+        // eşlik eden nesnenin özellikleri ve metotları burada tanımlanır
+    }
+
+}
