@@ -48,7 +48,7 @@ fun PeopleDetailItem(people: People) {
             modifier = Modifier
                 .padding(60.dp)
                 .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Card(
@@ -56,8 +56,7 @@ fun PeopleDetailItem(people: People) {
                     .padding(10.dp)
                     .clip(RoundedCornerShape(30.dp)),
                 elevation = CardDefaults.cardElevation(
-                    defaultElevation = 30.dp
-                )
+                    defaultElevation = 30.dp)
             )
             {
 

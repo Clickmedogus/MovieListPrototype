@@ -68,10 +68,8 @@ class MainActivity : ComponentActivity() {
 @ExperimentalMaterialApi
 @Composable
 fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavController) {
-
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
-    val getAllUserData = viewModel.getUserData
 
     Surface(
         color = MaterialTheme.colors.background,
@@ -80,7 +78,7 @@ fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavCont
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             scaffoldState = scaffoldState
-        ) {padding ->
+        ) { padding ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -104,7 +102,7 @@ fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavCont
                     )
                 }
 
-                LaunchedEffect(suspend {  }) {
+                LaunchedEffect(suspend { viewModel.getUserData() }) {
                     val result = viewModel.getUserData()
 
                     if (result is Resource.Success) {
@@ -126,13 +124,15 @@ fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavCont
                 }
 
                 if (viewModel.isLoading.value) {
-                    if (viewModel.getUserData.value!!.isNotEmpty()) {
+                    val getAllUserData = viewModel.getUserData.value
+
+                    if (getAllUserData != null) {
                         LazyColumn(
                             modifier = Modifier
                                 .padding(10.dp)
                         ) {
-                            items(getAllUserData.value!!.size) { index ->
-                                PeopleListItem(getAllUserData.value!![index]) { people ->
+                            items(getAllUserData.size) { index ->
+                                PeopleListItem(getAllUserData[index]) { people ->
                                     navController.navigate("secondScreen/$index")
                                 }
                             }
@@ -147,11 +147,9 @@ fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavCont
 @ExperimentalMaterialApi
 @Composable
 fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel()) {
-    val getAllUserData = viewModel.getUserData
-    val people = getAllUserData.value?.get(peopleIndex)
     val context = LocalContext.current
 
-    LaunchedEffect(suspend {  }) {
+    LaunchedEffect(suspend { viewModel.getUserData() }) {
         val result = viewModel.getUserData()
 
         if (result is Resource.Success) {
@@ -173,10 +171,12 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
     }
 
     if (viewModel.isLoading.value) {
+        val people = viewModel.getUserData.value?.get(peopleIndex)
+
         if (people != null) {
             PeopleDetailItem(people)
         } else {
-            Toast.makeText(context, "Error: People is null", Toast.LENGTH_LONG)
+            Toast.makeText(context, "Error: People Null", Toast.LENGTH_LONG)
                 .show()
         }
     }
