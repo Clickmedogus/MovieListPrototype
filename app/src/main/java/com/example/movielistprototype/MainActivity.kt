@@ -176,7 +176,8 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
         if (people != null) {
             PeopleDetailItem(people)
         } else {
-            // Handle error case
+            Toast.makeText(context, "Error: People is null", Toast.LENGTH_LONG)
+                .show()
         }
     }
 }
