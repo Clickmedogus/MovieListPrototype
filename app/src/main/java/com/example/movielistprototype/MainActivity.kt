@@ -13,13 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,7 +53,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController, startDestination = "CallApi") {
                     composable("CallApi") {
-                        CallApi(navController = navController)
+                        MainScreen(navController = navController)
                     }
                     composable(
                         "secondScreen/{peopleIndex}",
@@ -65,84 +67,108 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
 @Composable
-fun CallApi(viewModel: PeopleViewModel = hiltViewModel(), navController: NavController) {
-    val context = LocalContext.current
+fun MainScreen(navController: NavController) {
     val scaffoldState = rememberScaffoldState()
+    val viewModel: PeopleViewModel = hiltViewModel()
+    val searchData = remember { mutableStateOf("") }
 
-    Surface(
-        color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            scaffoldState = scaffoldState
-        ) { padding ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        scaffoldState = scaffoldState
+    ) { padding ->
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.LightGray)
+        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.LightGray)
+                    .fillMaxWidth()
+                    .background(Color.Blue)
+                    .padding(15.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Blue)
-                        .padding(15.dp)
-                ) {
-                    Text(
-                        text = "User Live Data",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = Color.White
-                    )
-                }
+                Text(
+                    text = "User Live Data",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+            }
+            TextField(
+                value = searchData.value,
+                onValueChange = { searchData.value = it },
+                label = { Text("Search") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            )
+            CallApi(
+                viewModel = viewModel,
+                navController = navController,
+                searchData = searchData.value
+            )
+        }
+    }
+}
 
-                LaunchedEffect(suspend { viewModel.getUserData() }) {
-                    val result = viewModel.getUserData()
+@ExperimentalMaterialApi
+@Composable
+fun CallApi(
+    viewModel: PeopleViewModel,
+    navController: NavController,
+    searchData: String
+) {
+    val context = LocalContext.current
+    LaunchedEffect(suspend { viewModel.getUserData() }) {
+        val result = viewModel.getUserData()
 
-                    if (result is Resource.Success) {
-                        Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-                    } else if (result is Resource.Error) {
-                        Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
+        if (result is Resource.Success) {
+            Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
+        } else if (result is Resource.Error) {
+            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
 
-                if (!viewModel.isLoading.value) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
+    val filteredData = if (searchData.isEmpty()) {
+        viewModel.getUserData.value
+    } else {
+        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
+    }
 
-                if (viewModel.isLoading.value) {
-                    val getAllUserData = viewModel.getUserData.value
+    if (!viewModel.isLoading.value) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+        }
+    }
 
-                    if (getAllUserData != null) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .padding(10.dp)
-                        ) {
-                            items(getAllUserData.size) { index ->
-                                PeopleListItem(getAllUserData[index]) { people ->
-                                    navController.navigate("secondScreen/$index")
-                                }
-                            }
-                        }
+    if (viewModel.isLoading.value) {
+        filteredData?.let { data ->
+            LazyColumn(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                items(data.size) { index ->
+                    PeopleListItem(data[index]) { people ->
+                        navController.navigate("secondScreen/$index")
                     }
                 }
             }
         }
     }
 }
+
 
 @ExperimentalMaterialApi
 @Composable
@@ -181,3 +207,4 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
         }
     }
 }
+
