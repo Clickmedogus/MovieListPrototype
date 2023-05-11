@@ -9,21 +9,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +39,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.movielistprototype.data.model.People
+import com.example.movielistprototype.ui.theme.LightBlue
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.utils.Resource
 import com.example.movielistprototype.view.PeopleDetailItem
@@ -68,7 +73,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalMaterialApi
 @Composable
 fun MainScreen(navController: NavController) {
@@ -85,16 +89,16 @@ fun MainScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.LightGray)
+                .background(LightBlue)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Blue)
-                    .padding(15.dp)
-            ) {
+                    .padding(top = 15.dp)
+                    .height(40.dp)
+            )  {
                 Text(
                     text = "User Live Data",
                     fontWeight = FontWeight.Bold,
@@ -102,15 +106,25 @@ fun MainScreen(navController: NavController) {
                     color = Color.White
                 )
             }
-            TextField(
+
+            OutlinedTextField(
                 value = searchData.value,
                 onValueChange = { searchData.value = it },
                 label = { Text("Search") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .align(Alignment.CenterHorizontally),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.White,
+                    cursorColor = Color.Black,
+                    disabledLabelColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
-            CallApi(
+            ShowPeopleItemList(
                 viewModel = viewModel,
                 navController = navController,
                 searchData = searchData.value
@@ -121,60 +135,32 @@ fun MainScreen(navController: NavController) {
 
 @ExperimentalMaterialApi
 @Composable
-fun CallApi(
+fun ShowPeopleItemList(
     viewModel: PeopleViewModel,
     navController: NavController,
     searchData: String
 ) {
-    val context = LocalContext.current
-    LaunchedEffect(suspend { viewModel.getUserData() }) {
-        val result = viewModel.getUserData()
+    //called the data
+    val data = getData(viewModel, searchData)
 
-        if (result is Resource.Success) {
-            Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-        } else if (result is Resource.Error) {
-            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
-                .show()
-        }
-    }
-
-    val filteredData = if (searchData.isEmpty()) {
-        viewModel.getUserData.value
-    } else {
-        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
-    }
-
-    if (!viewModel.isLoading.value) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-
-    if (viewModel.isLoading.value) {
-        filteredData?.let { data ->
-            LazyColumn(
-                modifier = Modifier.padding(10.dp)
-            ) {
-                items(data.size) { index ->
-                    PeopleListItem(data[index]) { people ->
-                        navController.navigate("secondScreen/$index")
-                    }
-                }
+    LazyColumn(
+        modifier = Modifier.padding(10.dp)
+    ) {
+        items(data.size) { i ->
+            PeopleListItem(data[i]) { people ->
+                navController.navigate("secondScreen/${i}")
             }
         }
     }
 }
 
-
-@ExperimentalMaterialApi
 @Composable
-fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel()) {
+private fun getData(
+    viewModel: PeopleViewModel,
+    searchData: String,
+): List<People> {
     val context = LocalContext.current
-
+    //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
     LaunchedEffect(suspend { viewModel.getUserData() }) {
         val result = viewModel.getUserData()
 
@@ -185,7 +171,13 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
                 .show()
         }
     }
-
+    //If a name is entered in the search bar, it filters the data accordingly.
+    val filteredData = if (searchData.isEmpty()) {
+        viewModel.getUserData.value
+    } else {
+        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
+    }
+    //If data retrieval is in progress, CircularProgress continues to run on the screen.
     if (!viewModel.isLoading.value) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -195,7 +187,42 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
             CircularProgressIndicator()
         }
     }
+    // If data is received, it sends the data.
+    if (viewModel.isLoading.value) {
+        filteredData?.let { data ->
+            return data
+        }
+    }
+    // If no data, it sends the emptyList.
+    return emptyList()
+}
 
+@ExperimentalMaterialApi
+@Composable
+fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
+    LaunchedEffect(suspend { viewModel.getUserData() }) {
+        val result = viewModel.getUserData()
+
+        if (result is Resource.Success) {
+            Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
+        } else if (result is Resource.Error) {
+            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+    //If data retrieval is in progress, CircularProgress continues to run on the screen.
+    if (!viewModel.isLoading.value) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+    // If data is received, it sends the data.
     if (viewModel.isLoading.value) {
         val people = viewModel.getUserData.value?.get(peopleIndex)
 
