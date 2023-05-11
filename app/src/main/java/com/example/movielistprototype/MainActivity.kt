@@ -22,6 +22,8 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -160,22 +162,25 @@ private fun getData(
     searchData: String,
 ): List<People> {
     val context = LocalContext.current
+    val filteredData: State<List<People>>
     //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
     LaunchedEffect(suspend { viewModel.getUserData() }) {
         val result = viewModel.getUserData()
 
-        if (result is Resource.Success) {
+        if (result is Resource.Success<*>) {
             Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-        } else if (result is Resource.Error) {
+        } else if (result is Resource.Error<*>) {
             Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
                 .show()
         }
     }
     //If a name is entered in the search bar, it filters the data accordingly.
-    val filteredData = if (searchData.isEmpty()) {
-        viewModel.getUserData.value
+    if (searchData.isEmpty()) {
+        filteredData  = viewModel.getUserData.collectAsState()
     } else {
-        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
+        filteredData = viewModel.getUserData.collectAsState().value.filter { it.name.contains(searchData, ignoreCase = true) }.let { filteredList ->
+            remember { mutableStateOf(filteredList) }
+        }
     }
     //If data retrieval is in progress, CircularProgress continues to run on the screen.
     if (!viewModel.isLoading.value) {
@@ -189,7 +194,7 @@ private fun getData(
     }
     // If data is received, it sends the data.
     if (viewModel.isLoading.value) {
-        filteredData?.let { data ->
+        filteredData.value.let { data ->
             return data
         }
     }
@@ -205,9 +210,9 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
     LaunchedEffect(suspend { viewModel.getUserData() }) {
         val result = viewModel.getUserData()
 
-        if (result is Resource.Success) {
+        if (result is Resource.Success<*>) {
             Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-        } else if (result is Resource.Error) {
+        } else if (result is Resource.Error<*>) {
             Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
                 .show()
         }
@@ -224,14 +229,9 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
     }
     // If data is received, it sends the data.
     if (viewModel.isLoading.value) {
-        val people = viewModel.getUserData.value?.get(peopleIndex)
+        val people = viewModel.getUserData.collectAsState().value.get(peopleIndex)
 
-        if (people != null) {
-            PeopleDetailItem(people)
-        } else {
-            Toast.makeText(context, "Error: People Null", Toast.LENGTH_LONG)
-                .show()
-        }
+        PeopleDetailItem(people)
     }
 }
 
