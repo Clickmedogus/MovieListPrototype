@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -45,6 +46,7 @@ import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.ui.theme.LightBlue
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.utils.Resource
+import com.example.movielistprototype.view.CustomView
 import com.example.movielistprototype.view.PeopleDetailItem
 import com.example.movielistprototype.view.PeopleListItem
 import com.example.movielistprototype.viewmodel.PeopleViewModel
@@ -86,28 +88,24 @@ fun MainScreen(navController: NavController) {
         modifier = Modifier.fillMaxSize(),
         scaffoldState = scaffoldState
     ) { padding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .background(LightBlue)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp)
-                    .height(40.dp)
-            )  {
-                Text(
-                    text = "User Live Data",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color.White
-                )
-            }
+            val (header, searchField, peopleItemList, customView) = createRefs()
+
+            Text(
+                text = "User Live Data",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = Color.White,
+                modifier = Modifier.constrainAs(header) {
+                    top.linkTo(parent.top, margin = 15.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+            )
 
             OutlinedTextField(
                 value = searchData.value,
@@ -117,7 +115,11 @@ fun MainScreen(navController: NavController) {
                     .fillMaxWidth()
                     .padding(10.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .align(Alignment.CenterHorizontally),
+                    .constrainAs(searchField) {
+                        top.linkTo(header.bottom, margin = 10.dp)
+                        start.linkTo(parent.start, margin = 10.dp)
+                        end.linkTo(parent.end, margin = 10.dp)
+                    },
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = Color.White,
                     cursorColor = Color.Black,
@@ -126,27 +128,51 @@ fun MainScreen(navController: NavController) {
                     unfocusedIndicatorColor = Color.Transparent
                 )
             )
+
             ShowPeopleItemList(
                 viewModel = viewModel,
                 navController = navController,
-                searchData = searchData.value
+                searchData = searchData.value,
+                modifier = Modifier.constrainAs(peopleItemList) {
+                    top.linkTo(searchField.bottom, margin = 10.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(customView.top, margin = 10.dp)
+                    width = Dimension.fillToConstraints
+                    height = Dimension.fillToConstraints
+                }
+            )
+
+            CustomView(
+                backgroundColor = Color.LightGray,
+                text = "Sayaç",
+                textColor = Color.White,
+                modifier = Modifier.constrainAs(customView) {
+                    start.linkTo(parent.start, margin = 10.dp)
+                    end.linkTo(parent.end, margin = 10.dp)
+                    bottom.linkTo(parent.bottom, margin = 10.dp)
+                    height = Dimension.wrapContent
+                    width = Dimension.fillToConstraints
+                }
             )
         }
     }
 }
+
 
 @ExperimentalMaterialApi
 @Composable
 fun ShowPeopleItemList(
     viewModel: PeopleViewModel,
     navController: NavController,
-    searchData: String
+    searchData: String,
+    modifier: Modifier
 ) {
     //called the data
     val data = getData(viewModel, searchData)
 
     LazyColumn(
-        modifier = Modifier.padding(10.dp)
+        modifier = modifier.padding(10.dp)
     ) {
         items(data.size) { i ->
             PeopleListItem(data[i]) { people ->
