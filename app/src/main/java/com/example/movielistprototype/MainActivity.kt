@@ -209,14 +209,6 @@ private fun getData(
              mutableStateOf(filteredList)
         }
     }
-
-    /*
-     filteredData = if (searchData.isEmpty()) {
-        viewModel.getUserData.collectAsState().value
-    } else {
-        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
-    }*/
-
     //If data retrieval is in progress, CircularProgress continues to run on the screen.
     if (!viewModel.isLoading.value) {
         Column(
