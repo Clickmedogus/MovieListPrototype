@@ -347,7 +347,7 @@ fun PeopleDetailItem(people: People) {
                     }
                 }
             }
-            CustomView(backgroundColor = Color.Blue, text = "Detay", textColor = Color.White,Modifier)
+            CustomView(backgroundColor = Color.Blue, text = "Detay", textColor = Color.White,15.sp,Modifier)
         }
     }
 }

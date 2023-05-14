@@ -147,6 +147,7 @@ fun MainScreen(navController: NavController) {
                 backgroundColor = Color.LightGray,
                 text = "Sayaç",
                 textColor = Color.White,
+                textSize = 15.sp,
                 modifier = Modifier.constrainAs(customView) {
                     start.linkTo(parent.start, margin = 10.dp)
                     end.linkTo(parent.end, margin = 10.dp)
@@ -175,7 +176,7 @@ fun ShowPeopleItemList(
         modifier = modifier.padding(10.dp)
     ) {
         items(data.size) { i ->
-            PeopleListItem(data[i]) { people ->
+            PeopleListItem(data[i]) {
                 navController.navigate("secondScreen/${i}")
             }
         }
@@ -205,9 +206,17 @@ private fun getData(
         filteredData  = viewModel.getUserData.collectAsState()
     } else {
         filteredData = viewModel.getUserData.collectAsState().value.filter { it.name.contains(searchData, ignoreCase = true) }.let { filteredList ->
-            remember { mutableStateOf(filteredList) }
+             mutableStateOf(filteredList)
         }
     }
+
+    /*
+     filteredData = if (searchData.isEmpty()) {
+        viewModel.getUserData.collectAsState().value
+    } else {
+        viewModel.getUserData.value?.filter { it.name.contains(searchData, ignoreCase = true) }
+    }*/
+
     //If data retrieval is in progress, CircularProgress continues to run on the screen.
     if (!viewModel.isLoading.value) {
         Column(
@@ -255,7 +264,7 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
     }
     // If data is received, it sends the data.
     if (viewModel.isLoading.value) {
-        val people = viewModel.getUserData.collectAsState().value.get(peopleIndex)
+        val people = viewModel.getUserData.collectAsState().value[peopleIndex]
 
         PeopleDetailItem(people)
     }
