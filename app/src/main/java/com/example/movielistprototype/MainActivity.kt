@@ -43,12 +43,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.movielistprototype.data.model.People
-import com.example.movielistprototype.ui.theme.LightBlue
+import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.utils.Resource
-import com.example.movielistprototype.view.CustomView
 import com.example.movielistprototype.view.PeopleDetailItem
 import com.example.movielistprototype.view.PeopleListItem
+import com.example.movielistprototype.view.TabBar
 import com.example.movielistprototype.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -60,8 +60,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             MovieListPrototypeTheme {
                 val navController = rememberNavController()
-                NavHost(navController, startDestination = "CallApi") {
-                    composable("CallApi") {
+                NavHost(navController, startDestination = "MainScreen") {
+                    composable("MainScreen") {
                         MainScreen(navController = navController)
                     }
                     composable(
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("peopleIndex") { type = NavType.IntType })
                     ) { backStackEntry ->
                         val peopleIndex = backStackEntry.arguments?.getInt("peopleIndex") ?: 0
-                        SecondScreen(peopleIndex)
+                        SecondScreen(peopleIndex, navController)
                     }
                 }
             }
@@ -91,7 +91,7 @@ fun MainScreen(navController: NavController) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LightBlue)
+                .background(Color.White)
         ) {
             val (header, searchField, peopleItemList, customView) = createRefs()
 
@@ -99,7 +99,7 @@ fun MainScreen(navController: NavController) {
                 text = "User Live Data",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
-                color = Color.White,
+                color = Color.Gray,
                 modifier = Modifier.constrainAs(header) {
                     top.linkTo(parent.top, margin = 15.dp)
                     start.linkTo(parent.start)
@@ -121,8 +121,8 @@ fun MainScreen(navController: NavController) {
                         end.linkTo(parent.end, margin = 10.dp)
                     },
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White,
-                    cursorColor = Color.Black,
+                    backgroundColor = Gray10,
+                    cursorColor = Color.White,
                     disabledLabelColor = Color.White,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
@@ -143,23 +143,24 @@ fun MainScreen(navController: NavController) {
                 }
             )
 
-            CustomView(
-                backgroundColor = Color.LightGray,
-                text = "Sayaç",
-                textColor = Color.White,
-                textSize = 15.sp,
+            TabBar(
+                backgroundColor = Gray10,
+                firstTabText = "MainScreen",
+                secondTabText = "DetailScreen",
                 modifier = Modifier.constrainAs(customView) {
                     start.linkTo(parent.start, margin = 10.dp)
                     end.linkTo(parent.end, margin = 10.dp)
                     bottom.linkTo(parent.bottom, margin = 10.dp)
                     height = Dimension.wrapContent
                     width = Dimension.fillToConstraints
-                }
+                },
+                navController = navController,
+                navigateIndex = 1,
+                selectedTabIndex = 0
             )
         }
     }
 }
-
 
 @ExperimentalMaterialApi
 @Composable
@@ -231,7 +232,7 @@ private fun getData(
 
 @ExperimentalMaterialApi
 @Composable
-fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel()) {
+fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: PeopleViewModel = hiltViewModel()) {
     val context = LocalContext.current
     //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
     LaunchedEffect(suspend { viewModel.getUserData() }) {
@@ -258,7 +259,9 @@ fun SecondScreen(peopleIndex: Int, viewModel: PeopleViewModel = hiltViewModel())
     if (viewModel.isLoading.value) {
         val people = viewModel.getUserData.collectAsState().value[peopleIndex]
 
-        PeopleDetailItem(people)
+        PeopleDetailItem(people,navController)
     }
 }
+
+
 

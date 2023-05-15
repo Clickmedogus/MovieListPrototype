@@ -26,24 +26,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.movielistprototype.R
 import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.ui.theme.Gray10
 
 @Composable
-fun PeopleDetailItem(people: People) {
+fun PeopleDetailItem(people: People, navController: NavController) {
 
-    Card(
+    ConstraintLayout(
         modifier = Modifier
-            .padding(5.dp)
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color.LightGray)
-            .clip(RoundedCornerShape(10.dp)),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp,),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
+            .background(Color.White)
+            .padding(5.dp)
+            .clip(RoundedCornerShape(10.dp))
+    ) {
+        val (content, tabBar) = createRefs()
         Column(
             modifier = Modifier
                 .padding(60.dp)
@@ -347,8 +348,23 @@ fun PeopleDetailItem(people: People) {
                     }
                 }
             }
-            CustomView(backgroundColor = Color.Blue, text = "Detay", textColor = Color.White,15.sp,Modifier)
         }
+
+        TabBar(
+            backgroundColor = Gray10,
+            firstTabText = "MainScreen",
+            secondTabText = "DetailScreen",
+            modifier = Modifier
+                .constrainAs(tabBar) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+                .fillMaxWidth(),
+            navController = navController,
+            navigateIndex = 1,
+            selectedTabIndex = 1
+        )
     }
 }
 
@@ -364,5 +380,5 @@ fun PeopleDetailItemPreview() {
         "fair",
         "blue")
 
-    PeopleDetailItem(people)
+    PeopleDetailItem(people, rememberNavController())
 }
