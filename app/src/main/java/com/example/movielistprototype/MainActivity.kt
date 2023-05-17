@@ -45,7 +45,6 @@ import androidx.navigation.navArgument
 import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
-import com.example.movielistprototype.utils.Resource
 import com.example.movielistprototype.view.ErrorView
 import com.example.movielistprototype.view.PeopleDetailItem
 import com.example.movielistprototype.view.PeopleListItem
@@ -253,16 +252,21 @@ private fun getData(
 @Composable
 fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: PeopleViewModel = hiltViewModel()) {
     val context = LocalContext.current
-    //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
+    // Veriyi alma işlemi
     LaunchedEffect(Unit) {
-        val result = viewModel.userData.value
+        try {
+            viewModel.fetchUserData() // Veri alımını başlat
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
 
-        if (result is Resource.Success<*>) {
-            Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-        } else if (result is Resource.Error<*>) {
-            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT).show()
+        // Veri alımının tamamlanmasını beklemek için döngü kullanabilirsiniz
+        while (viewModel.isLoading) {
+            // Veriler henüz gelmedi, bekle
+            delay(100) // Belirli bir süre bekleyin (100 milisaniye örneği)
         }
     }
+
     // Eğer veri alımı devam ediyorsa, CircularProgress ekranda görünmeye devam eder.
     if (!viewModel.isLoading) {
         Column(
@@ -273,13 +277,13 @@ fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: Peop
             CircularProgressIndicator()
         }
     }
-    // Veri alındıysa, veriyi gönderir.
-    if (viewModel.isLoading) {
-        val people = viewModel.userData.collectAsState().value.data.orEmpty()[peopleIndex]
 
+    // Veri alındıysa ve geçerli bir indeks ise, veriyi gönderir.
+    val userData = viewModel.userData.collectAsState().value.data
+    if (!viewModel.isLoading && userData != null && peopleIndex >= 0 && peopleIndex < userData.size) {
+        val people = userData[peopleIndex]
         PeopleDetailItem(people, navController)
     }
-
 }
 
 
