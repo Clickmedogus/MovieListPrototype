@@ -21,7 +21,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,11 +46,13 @@ import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.utils.Resource
+import com.example.movielistprototype.view.ErrorView
 import com.example.movielistprototype.view.PeopleDetailItem
 import com.example.movielistprototype.view.PeopleListItem
 import com.example.movielistprototype.view.TabBar
 import com.example.movielistprototype.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -83,7 +85,7 @@ fun MainScreen(navController: NavController) {
     val scaffoldState = rememberScaffoldState()
     val viewModel: PeopleViewModel = hiltViewModel()
     val searchData = remember { mutableStateOf("") }
-
+    val isVisible = remember { mutableStateOf(true) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         scaffoldState = scaffoldState
@@ -107,28 +109,6 @@ fun MainScreen(navController: NavController) {
                 }
             )
 
-            OutlinedTextField(
-                value = searchData.value,
-                onValueChange = { searchData.value = it },
-                label = { Text("Search") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .constrainAs(searchField) {
-                        top.linkTo(header.bottom, margin = 10.dp)
-                        start.linkTo(parent.start, margin = 10.dp)
-                        end.linkTo(parent.end, margin = 10.dp)
-                    },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Gray10,
-                    cursorColor = Color.White,
-                    disabledLabelColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                )
-            )
-
             ShowPeopleItemList(
                 viewModel = viewModel,
                 navController = navController,
@@ -140,24 +120,53 @@ fun MainScreen(navController: NavController) {
                     bottom.linkTo(customView.top, margin = 10.dp)
                     width = Dimension.fillToConstraints
                     height = Dimension.fillToConstraints
-                }
+                },
+                isVisible
             )
 
-            TabBar(
-                backgroundColor = Gray10,
-                firstTabText = "MainScreen",
-                secondTabText = "DetailScreen",
-                modifier = Modifier.constrainAs(customView) {
-                    start.linkTo(parent.start, margin = 10.dp)
-                    end.linkTo(parent.end, margin = 10.dp)
-                    bottom.linkTo(parent.bottom, margin = 10.dp)
-                    height = Dimension.wrapContent
-                    width = Dimension.fillToConstraints
-                },
-                navController = navController,
-                navigateIndex = 1,
-                selectedTabIndex = 0
-            )
+            if (isVisible.value) {
+
+                TabBar(
+                    backgroundColor = Gray10,
+                    firstTabText = "MainScreen",
+                    secondTabText = "DetailScreen",
+                    modifier = Modifier.constrainAs(customView) {
+                        start.linkTo(parent.start, margin = 10.dp)
+                        end.linkTo(parent.end, margin = 10.dp)
+                        bottom.linkTo(parent.bottom, margin = 10.dp)
+                        height = Dimension.wrapContent
+                        width = Dimension.fillToConstraints
+                    },
+                    navController = navController,
+                    navigateIndex = 1,
+                    selectedTabIndex = 0
+                )
+
+                OutlinedTextField(
+                    value = searchData.value,
+                    onValueChange = { searchData.value = it },
+                    label = { Text("Search") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .constrainAs(searchField) {
+                            top.linkTo(header.bottom, margin = 10.dp)
+                            start.linkTo(parent.start, margin = 10.dp)
+                            end.linkTo(parent.end, margin = 10.dp)
+                        },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Gray10,
+                        cursorColor = Color.White,
+                        disabledLabelColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+            } else
+                ErrorView(modifier = Modifier, errorText = "Error") {
+                    isVisible.value =true
+                }
         }
     }
 }
@@ -168,10 +177,12 @@ fun ShowPeopleItemList(
     viewModel: PeopleViewModel,
     navController: NavController,
     searchData: String,
-    modifier: Modifier
+    modifier: Modifier,
+    isVisible : MutableState<Boolean>
 ) {
-    //called the data
-    val data = getData(viewModel, searchData)
+
+    // Hata yoksa, veriyi göster
+    val data = getData(viewModel, searchData,isVisible)
 
     LazyColumn(
         modifier = modifier.padding(10.dp)
@@ -184,34 +195,38 @@ fun ShowPeopleItemList(
     }
 }
 
+
 @Composable
 private fun getData(
     viewModel: PeopleViewModel,
     searchData: String,
+    isVisible: MutableState<Boolean>
 ): List<People> {
     val context = LocalContext.current
-    val filteredData: State<List<People>>
-    //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
-    LaunchedEffect(suspend { viewModel.getUserData() }) {
-        val result = viewModel.getUserData()
+    val filteredData: List<People>
 
-        if (result is Resource.Success<*>) {
-            Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
-        } else if (result is Resource.Error<*>) {
-            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
-                .show()
+    // Veriyi alma işlemi
+    LaunchedEffect(Unit) {
+        try {
+            viewModel.fetchUserData() // Veri alımını başlat
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            isVisible.value = false
+        }
+
+        // Veri alımının tamamlanmasını beklemek için döngü kullanabilirsiniz
+        while (viewModel.isLoading) {
+            // Veriler henüz gelmedi, bekle
+            delay(100) // Belirli bir süre bekleyin (100 milisaniye örneği)
+        }
+
+        // Veri yüklendiyse, isVisible değerini güncelleyin
+        if (viewModel.userData.value.data?.isNotEmpty() == true) {
+            isVisible.value = true
         }
     }
-    //If a name is entered in the search bar, it filters the data accordingly.
-    if (searchData.isEmpty()) {
-        filteredData  = viewModel.getUserData.collectAsState()
-    } else {
-        filteredData = viewModel.getUserData.collectAsState().value.filter { it.name.contains(searchData, ignoreCase = true) }.let { filteredList ->
-             mutableStateOf(filteredList)
-        }
-    }
-    //If data retrieval is in progress, CircularProgress continues to run on the screen.
-    if (!viewModel.isLoading.value) {
+    // Eğer veri yüklemesi devam ediyorsa, CircularProgress ekranda görünmeye devam eder.
+    if (viewModel.isLoading) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -220,14 +235,18 @@ private fun getData(
             CircularProgressIndicator()
         }
     }
-    // If data is received, it sends the data.
-    if (viewModel.isLoading.value) {
-        filteredData.value.let { data ->
-            return data
-        }
+    //If a name is entered in the search bar, it filters the data accordingly.
+    filteredData = if (searchData.isEmpty()) {
+        viewModel.userData.collectAsState().value.data.orEmpty()
+    } else {
+        viewModel.userData.collectAsState().value.data.orEmpty().filter { it.name.contains(searchData, ignoreCase = true) }
     }
-    // If no data, it sends the emptyList.
-    return emptyList()
+
+    if (filteredData.isEmpty())
+        isVisible.value = false
+
+
+    return filteredData
 }
 
 @ExperimentalMaterialApi
@@ -235,18 +254,17 @@ private fun getData(
 fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: PeopleViewModel = hiltViewModel()) {
     val context = LocalContext.current
     //Calls the data from the viewModel. It prints the successful or unsuccessful status of the call as a toast message.
-    LaunchedEffect(suspend { viewModel.getUserData() }) {
-        val result = viewModel.getUserData()
+    LaunchedEffect(Unit) {
+        val result = viewModel.userData.value
 
         if (result is Resource.Success<*>) {
             Toast.makeText(context, "Fetching data success!", Toast.LENGTH_SHORT).show()
         } else if (result is Resource.Error<*>) {
-            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(context, "Error: ${result.message}", Toast.LENGTH_SHORT).show()
         }
     }
-    //If data retrieval is in progress, CircularProgress continues to run on the screen.
-    if (!viewModel.isLoading.value) {
+    // Eğer veri alımı devam ediyorsa, CircularProgress ekranda görünmeye devam eder.
+    if (!viewModel.isLoading) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -255,12 +273,13 @@ fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: Peop
             CircularProgressIndicator()
         }
     }
-    // If data is received, it sends the data.
-    if (viewModel.isLoading.value) {
-        val people = viewModel.getUserData.collectAsState().value[peopleIndex]
+    // Veri alındıysa, veriyi gönderir.
+    if (viewModel.isLoading) {
+        val people = viewModel.userData.collectAsState().value.data.orEmpty()[peopleIndex]
 
-        PeopleDetailItem(people,navController)
+        PeopleDetailItem(people, navController)
     }
+
 }
 
 

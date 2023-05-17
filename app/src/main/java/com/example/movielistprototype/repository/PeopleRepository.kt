@@ -3,7 +3,6 @@ package com.example.movielistprototype.repository
 import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.data.request.ApiInterface
 import com.example.movielistprototype.utils.Resource
-import com.example.movielistprototype.utils.Resource.Success
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
@@ -13,12 +12,11 @@ class PeopleRespository @Inject constructor(
 ) {
 
     suspend fun getUserResponse(): Resource<List<People>> {
-        val response = try {
-            apiInterface.getPeopleData().results
+        return try {
+            val response = apiInterface.getPeopleData().results
+            Resource.Success(response.toList())
         } catch (e: Exception) {
-            return Resource.Error("An unknown error occured: ${e.localizedMessage}")
+            Resource.Error("An unknown error occurred: ${e.localizedMessage}")
         }
-
-        return Success(response)
     }
 }

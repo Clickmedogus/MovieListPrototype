@@ -7,55 +7,42 @@ import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.repository.PeopleRespository
 import com.example.movielistprototype.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PeopleViewModel @Inject constructor(
-    private val peopleRespository: PeopleRespository
-): ViewModel() {
+    private val peopleRepository: PeopleRespository
+) : ViewModel() {
 
-    var isLoading = mutableStateOf(false)
-    private var _getUserData: MutableStateFlow<List<People>> = MutableStateFlow(emptyList())
-    var getUserData: MutableStateFlow<List<People>> = _getUserData
+    private val _userData: MutableStateFlow<Resource<List<People>>> =
+        MutableStateFlow(Resource.Loading(emptyList()))
+    val userData: StateFlow<Resource<List<People>>> = _userData
 
-
-    fun getUserData(): StateFlow<Resource<List<People>>> {
-        return object : StateFlow<Resource<List<People>>> {
-            override val replayCache: List<Resource<List<People>>>
-                get() = TODO("Not yet implemented")
-
-            override val value: Resource<List<People>> = Resource.Loading(emptyList())
-
-            override suspend fun collect(collector: FlowCollector<Resource<List<People>>>)
-            = this@PeopleViewModel.getUserData().collect(collector)
-        }
-    }
+    private val _isLoading = mutableStateOf(false)
+    val isLoading get() = _isLoading.value
 
     init {
         fetchUserData()
     }
 
-    private fun fetchUserData() {
+    fun fetchUserData() {
         viewModelScope.launch {
-
-            flow {
-                val result = peopleRespository.getUserResponse()
-                if (result is Resource.Success) {
-                    isLoading.value = true
-                    _getUserData.value = result.data!!
+            _isLoading.value = true // İşlem başladığında true olarak ayarlanır.
+            try {
+                val result = peopleRepository.getUserResponse()
+                if (result is Resource.Success<*>) {
+                    _userData.value = result
+                } else if (result is Resource.Error<*>) {
+                    _userData.value = Resource.Error(result.message.orEmpty())
                 }
-
-                emit(result)
-            }.collect {
-                getUserData.value = it.data!!
+            } catch (e: Exception) {
+                _userData.value = Resource.Error(e.message.orEmpty())
+            } finally {
+                _isLoading.value = false // İşlem tamamlandığında false olarak ayarlanır.
             }
         }
-
-
     }
 }
