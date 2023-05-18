@@ -102,8 +102,8 @@ dependencies {
     //Leak Canary
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
-
-
+    //coil
+    implementation("io.coil-kt:coil-compose:2.3.0")
 }
 
 kapt {

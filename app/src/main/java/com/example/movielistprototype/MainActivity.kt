@@ -43,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.movielistprototype.data.model.People
+import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.view.ErrorView
@@ -52,10 +53,16 @@ import com.example.movielistprototype.view.TabBar
 import com.example.movielistprototype.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import org.jetbrains.annotations.NotNull
+import javax.inject.Inject
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    @NotNull
+    lateinit var imageLoaderInterface: ImageLoaderInterface
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -70,7 +77,7 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("peopleIndex") { type = NavType.IntType })
                     ) { backStackEntry ->
                         val peopleIndex = backStackEntry.arguments?.getInt("peopleIndex") ?: 0
-                        SecondScreen(peopleIndex, navController)
+                        SecondScreen(peopleIndex, navController,imageLoaderInterface)
                     }
                 }
             }
@@ -250,20 +257,20 @@ private fun getData(
 
 @ExperimentalMaterialApi
 @Composable
-fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: PeopleViewModel = hiltViewModel()) {
+fun SecondScreen(peopleIndex: Int, navController: NavController, imageLoaderInterface: ImageLoaderInterface, viewModel: PeopleViewModel = hiltViewModel()) {
     val context = LocalContext.current
     // Veriyi alma işlemi
     LaunchedEffect(Unit) {
         try {
-            viewModel.fetchUserData() // Veri alımını başlat
+            viewModel.fetchUserData() // Veri alımı
         } catch (e: Exception) {
             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
-        // Veri alımının tamamlanmasını beklemek için döngü kullanabilirsiniz
+        // Veri alımının tamamlanmasını beklemek için döngü
         while (viewModel.isLoading) {
             // Veriler henüz gelmedi, bekle
-            delay(100) // Belirli bir süre bekleyin (100 milisaniye örneği)
+            delay(100) // Belirli bir süre bekler
         }
     }
 
@@ -282,7 +289,7 @@ fun SecondScreen(peopleIndex: Int, navController: NavController, viewModel: Peop
     val userData = viewModel.userData.collectAsState().value.data
     if (!viewModel.isLoading && userData != null && peopleIndex >= 0 && peopleIndex < userData.size) {
         val people = userData[peopleIndex]
-        PeopleDetailItem(people, navController)
+        PeopleDetailItem(people, navController,imageLoaderInterface)
     }
 }
 
