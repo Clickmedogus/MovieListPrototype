@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.movielistprototype.data.model.People
-import com.example.movielistprototype.repository.PeopleRespository
+import com.example.movielistprototype.data.repository.PeopleRespository
 import com.example.movielistprototype.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,13 +1,11 @@
-package com.example.movielistprototype.view
+package com.example.movielistprototype.view.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,15 +15,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -39,11 +32,11 @@ import com.example.movielistprototype.R
 import com.example.movielistprototype.data.model.People
 import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import com.example.movielistprototype.ui.theme.Gray10
+import com.example.movielistprototype.view.LoadImage
+import com.example.movielistprototype.view.TabBar
 
 @Composable
 fun PeopleDetailItem(people: People, navController: NavController, imageLoaderInterface: ImageLoaderInterface) {
-
-    var painter: Painter? by remember { mutableStateOf(null) }
 
     ConstraintLayout(
         modifier = Modifier
@@ -53,7 +46,7 @@ fun PeopleDetailItem(people: People, navController: NavController, imageLoaderIn
             .padding(5.dp)
             .clip(RoundedCornerShape(10.dp))
     ) {
-        val (content, tabBar) = createRefs()
+        val (tabBar) = createRefs()
         Column(
             modifier = Modifier
                 .padding(60.dp)
@@ -70,27 +63,13 @@ fun PeopleDetailItem(people: People, navController: NavController, imageLoaderIn
             )
             {
                 LoadImage(
-                    url = "https://i.guim.co.uk/img/media/df6eba62024da3f69428980382dbe3281396ee69/326_296_5114_3068/master/5114.jpg?width=465&quality=85&dpr=1&s=none",
+                    url = "https://i.imgur.com/DvpvklR.png",
+                    imageLoaderInterface = imageLoaderInterface,
                     modifier = Modifier
-                        .background(Gray10)
                         .padding(8.dp)
                         .size(110.dp)
-                        .clip(RoundedCornerShape(corner = CornerSize(16.dp))),
-                    imageLoaderInterface = imageLoaderInterface
-                ) { loadedPainter ->
-                    painter = loadedPainter
-                }
-
-                Box(modifier = Modifier.size(200.dp)) {
-                    if (painter != null) {
-                        Image(
-                            painter = painter!!,
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
+                        .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
+                )
             }
 
             Spacer(modifier = Modifier.padding(5.dp))
@@ -400,5 +379,6 @@ fun PeopleDetailItemPreview() {
         "fair",
         "blue")
 
-    //PeopleDetailItem(people, rememberNavController(),ImageLoaderInterface)
+
+    //PeopleDetailItem(people, rememberNavController(),ImageLoaderInterface?: i)
 }

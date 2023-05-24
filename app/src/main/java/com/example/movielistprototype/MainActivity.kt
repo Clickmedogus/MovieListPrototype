@@ -47,8 +47,8 @@ import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.view.ErrorView
-import com.example.movielistprototype.view.PeopleDetailItem
-import com.example.movielistprototype.view.PeopleListItem
+import com.example.movielistprototype.view.item.PeopleDetailItem
+import com.example.movielistprototype.view.item.PeopleListItem
 import com.example.movielistprototype.view.TabBar
 import com.example.movielistprototype.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint

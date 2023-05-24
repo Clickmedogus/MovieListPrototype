@@ -1,7 +1,8 @@
-package com.example.movielistprototype.data
+package com.example.movielistprototype.data.service
 
+import com.example.movielistprototype.data.Constant
 import com.example.movielistprototype.data.request.ApiInterface
-import com.example.movielistprototype.repository.PeopleRespository
+import com.example.movielistprototype.data.repository.PeopleRespository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

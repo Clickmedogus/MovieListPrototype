@@ -1,4 +1,4 @@
-package com.example.movielistprototype.view
+package com.example.movielistprototype.view.item
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

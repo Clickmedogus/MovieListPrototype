@@ -7,5 +7,5 @@ import javax.inject.Singleton
 @Singleton
 interface ApiInterface {
     @GET("people")
-    suspend fun getPeopleData(): PeopleResponse
+    suspend fun getPeopleDtoData(): PeopleResponse
 }

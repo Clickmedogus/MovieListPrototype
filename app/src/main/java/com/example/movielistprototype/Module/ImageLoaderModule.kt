@@ -2,7 +2,7 @@ package com.example.movielistprototype.Module
 
 import android.app.Application
 import android.content.Context
-import com.example.movielistprototype.CoilClass.CoilImageLoader
+import com.example.movielistprototype.coilClass.CoilImageLoader
 import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import dagger.Module
 import dagger.Provides
