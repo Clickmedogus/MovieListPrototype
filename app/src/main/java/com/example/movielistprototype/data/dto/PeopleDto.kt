@@ -1,11 +1,11 @@
 package com.example.movielistprototype.data.dto
 
 data class PeopleDto(
-    val name: String = "People",
-    val height: String = "180",
-    val mass: String = "70",
-    val gender: String = "male or female",
-    val hairColor: String = "black",
-    val skinColor: String = "black",
-    val eyeColor: String = "black"
+    val name: String?,
+    val height: String?,
+    val mass: String?,
+    val gender: String?,
+    val hair_color: String?,
+    val skin_color: String?,
+    val eye_color: String?
 )

@@ -42,28 +42,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.detail.ui.DetailCompose
 import com.example.movielistprototype.data.model.People
-import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.ui.theme.MovieListPrototypeTheme
 import com.example.movielistprototype.view.ErrorView
-import com.example.movielistprototype.view.item.PeopleDetailItem
-import com.example.movielistprototype.view.item.PeopleListItem
 import com.example.movielistprototype.view.TabBar
+import com.example.movielistprototype.view.item.PeopleListItem
 import com.example.movielistprototype.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import org.jetbrains.annotations.NotNull
-import javax.inject.Inject
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    @NotNull
-    lateinit var imageLoaderInterface: ImageLoaderInterface
-
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MovieListPrototypeTheme {
@@ -77,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("peopleIndex") { type = NavType.IntType })
                     ) { backStackEntry ->
                         val peopleIndex = backStackEntry.arguments?.getInt("peopleIndex") ?: 0
-                        SecondScreen(peopleIndex, navController,imageLoaderInterface)
+                        SecondScreen(peopleIndex, navController)
                     }
                 }
             }
@@ -130,23 +123,24 @@ fun MainScreen(navController: NavController) {
                 isVisible
             )
 
-            if (isVisible.value) {
+            TabBar(
+                backgroundColor = Gray10,
+                firstTabText = "MainScreen",
+                secondTabText = "DetailScreen",
+                modifier = Modifier.constrainAs(customView) {
+                    start.linkTo(parent.start, margin = 10.dp)
+                    end.linkTo(parent.end, margin = 10.dp)
+                    bottom.linkTo(parent.bottom, margin = 10.dp)
+                    height = Dimension.wrapContent
+                    width = Dimension.fillToConstraints
+                },
+                navController = navController,
+                navigateIndex = 1,
+                selectedTabIndex = 0,
+                isVisible = isVisible.value
+            )
 
-                TabBar(
-                    backgroundColor = Gray10,
-                    firstTabText = "MainScreen",
-                    secondTabText = "DetailScreen",
-                    modifier = Modifier.constrainAs(customView) {
-                        start.linkTo(parent.start, margin = 10.dp)
-                        end.linkTo(parent.end, margin = 10.dp)
-                        bottom.linkTo(parent.bottom, margin = 10.dp)
-                        height = Dimension.wrapContent
-                        width = Dimension.fillToConstraints
-                    },
-                    navController = navController,
-                    navigateIndex = 1,
-                    selectedTabIndex = 0
-                )
+            if (isVisible.value) {
 
                 OutlinedTextField(
                     value = searchData.value,
@@ -209,7 +203,6 @@ private fun getData(
     isVisible: MutableState<Boolean>
 ): List<People> {
     val context = LocalContext.current
-    val filteredData: List<People>
 
     // Veriyi alma işlemi
     LaunchedEffect(Unit) {
@@ -242,7 +235,7 @@ private fun getData(
         }
     }
     //If a name is entered in the search bar, it filters the data accordingly.
-    filteredData = if (searchData.isEmpty()) {
+    val filteredData: List<People> = if (searchData.isEmpty()) {
         viewModel.userData.collectAsState().value.data.orEmpty()
     } else {
         viewModel.userData.collectAsState().value.data.orEmpty().filter { it.name.contains(searchData, ignoreCase = true) }
@@ -257,40 +250,8 @@ private fun getData(
 
 @ExperimentalMaterialApi
 @Composable
-fun SecondScreen(peopleIndex: Int, navController: NavController, imageLoaderInterface: ImageLoaderInterface, viewModel: PeopleViewModel = hiltViewModel()) {
-    val context = LocalContext.current
-    // Veriyi alma işlemi
-    LaunchedEffect(Unit) {
-        try {
-            viewModel.fetchUserData() // Veri alımı
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-
-        // Veri alımının tamamlanmasını beklemek için döngü
-        while (viewModel.isLoading) {
-            // Veriler henüz gelmedi, bekle
-            delay(100) // Belirli bir süre bekler
-        }
-    }
-
-    // Eğer veri alımı devam ediyorsa, CircularProgress ekranda görünmeye devam eder.
-    if (!viewModel.isLoading) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-
-    // Veri alındıysa ve geçerli bir indeks ise, veriyi gönderir.
-    val userData = viewModel.userData.collectAsState().value.data
-    if (!viewModel.isLoading && userData != null && peopleIndex >= 0 && peopleIndex < userData.size) {
-        val people = userData[peopleIndex]
-        PeopleDetailItem(people, navController,imageLoaderInterface)
-    }
+fun SecondScreen(peopleIndex: Int, navController: NavController) {
+    DetailCompose(peopleIndex, navController)
 }
 
 

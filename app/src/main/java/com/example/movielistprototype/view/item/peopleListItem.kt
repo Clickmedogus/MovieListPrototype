@@ -97,7 +97,9 @@ fun PeopleListItemPreview() {
         height = "180 cm",
         mass = "100 kg",
         gender = "male",
-        hairColor = "black"
+        hairColor = "black",
+        skinColor = "black",
+        eyeColor = "black"
     )
     PeopleListItem(people = people) {}
 }

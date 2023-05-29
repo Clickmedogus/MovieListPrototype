@@ -28,15 +28,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.movielistprototype.R
 import com.example.movielistprototype.data.model.People
-import com.example.movielistprototype.interfaces.ImageLoaderInterface
 import com.example.movielistprototype.ui.theme.Gray10
 import com.example.movielistprototype.view.LoadImage
 import com.example.movielistprototype.view.TabBar
 
 @Composable
-fun PeopleDetailItem(people: People, navController: NavController, imageLoaderInterface: ImageLoaderInterface) {
+fun PeopleDetailItem(people: People, navController: NavController) {
 
     ConstraintLayout(
         modifier = Modifier
@@ -63,10 +63,8 @@ fun PeopleDetailItem(people: People, navController: NavController, imageLoaderIn
             )
             {
                 LoadImage(
-                    url = "https://i.imgur.com/DvpvklR.png",
-                    imageLoaderInterface = imageLoaderInterface,
+                    url = "https://i.guim.co.uk/img/media/df6eba62024da3f69428980382dbe3281396ee69/326_296_5114_3068/master/5114.jpg?width=620&quality=45&dpr=2&s=none",
                     modifier = Modifier
-                        .padding(8.dp)
                         .size(110.dp)
                         .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
                 )
@@ -362,7 +360,8 @@ fun PeopleDetailItem(people: People, navController: NavController, imageLoaderIn
                 .fillMaxWidth(),
             navController = navController,
             navigateIndex = 1,
-            selectedTabIndex = 1
+            selectedTabIndex = 1,
+            isVisible = true
         )
     }
 }
@@ -380,5 +379,5 @@ fun PeopleDetailItemPreview() {
         "blue")
 
 
-    //PeopleDetailItem(people, rememberNavController(),ImageLoaderInterface?: i)
+    PeopleDetailItem(people, rememberNavController())
 }

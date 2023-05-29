@@ -30,7 +30,8 @@ fun TabBar(
     modifier: Modifier,
     navController : NavController,
     navigateIndex : Int,
-    selectedTabIndex : Int
+    selectedTabIndex : Int,
+    isVisible : Boolean
 ) {
 
     var tabIndex by remember { mutableStateOf(0) }
@@ -49,7 +50,7 @@ fun TabBar(
         ) {
             // İlk sekme tıklandığında "MainScreen" hedefine yönlendirilir.
             Tab(selected = tabIndex == 0, onClick = {
-                if (tabIndex != 0) {
+                if (tabIndex != 0 && isVisible) {
                     tabIndex = 0
                     navController.navigate("MainScreen")
                 }
@@ -58,7 +59,7 @@ fun TabBar(
             }
             // İkinci sekme tıklandığında "secondScreen" hedefine yönlendirilir.
             Tab(selected = tabIndex == 1, onClick = {
-                if(tabIndex != 1) {
+                if(tabIndex != 1 && isVisible) {
                     tabIndex = 1
                     navController.navigate("secondScreen/${navigateIndex}")
                 }
@@ -72,5 +73,5 @@ fun TabBar(
 @Preview
 @Composable
 fun PreviewTabBar() {
-    TabBar(Gray10,"MainScreen","DetailScreen",Modifier, rememberNavController(),1,2)
+    TabBar(Gray10,"MainScreen","DetailScreen",Modifier, rememberNavController(),1,2,true)
 }
