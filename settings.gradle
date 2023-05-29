@@ -10,8 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://s3.amazonaws.com/aws-sdk-android-ivy-repo/release' }
     }
 }
 rootProject.name = "MovieListPrototype"
 include ':app'
 include ':detail'
+include ':video'
