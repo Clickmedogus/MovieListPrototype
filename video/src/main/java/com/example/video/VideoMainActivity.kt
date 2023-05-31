@@ -14,8 +14,7 @@ class VideoMainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MovieListPrototypeTheme {
-                // A surface container using the 'background' color from the theme
-                IVSPlayerViewComponent(streamUrl = "https://d6hwdeiig07o4.cloudfront.net/ivs/956482054022/cTo5UpKS07do/2020-07-13T22-54-42.188Z/OgRXMLtq8M11/media/hls/master.m3u8")
+               IVSPlayerViewComponent(streamUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
             }
         }
     }
